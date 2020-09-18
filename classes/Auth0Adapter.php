@@ -20,9 +20,14 @@ class Auth0Adapter extends AbstractAdapter {
         $response = $this->oAuth->request('/userinfo');
         $result = $JSON->decode($response);
 
-        if( !empty($result['username']) )
+
+        $hlp = plugin_load('helper', 'oauth');
+        $username_claim = "{$hlp->getConf('auth0-namespace')}username";
+        $groups_claim   = "{$hlp->getConf('auth0-namespace')}groups";
+
+        if( !empty($result[$username_claim]) )
         {
-            $data['user'] = $result['username'];
+            $data['user'] = $result[$username_claim];
         }
         else
         {
@@ -30,6 +35,7 @@ class Auth0Adapter extends AbstractAdapter {
         }
         $data['name'] = isset($result['name']) ? $result['name'] : $result['email'];
         $data['mail'] = $result['email'];
+        $data['grps'] = isset($result[$groups_claim]) ? $result[$groups_claim] : [];
 
         return $data;
     }
